@@ -1,0 +1,11 @@
+[build]
+  publish = "."
+  command = ""
+
+[context.production.environment]
+  API_BASE_URL = "https://your-backend-url.com"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

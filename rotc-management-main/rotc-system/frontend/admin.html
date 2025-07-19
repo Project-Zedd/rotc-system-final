@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ROTC Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/feather-icons/dist/feather.css" />
+  <style>
+    /* Color Palette */
+    :root {
+      --primary-bg: #F5F7FA;
+      --secondary-bg: #FFFFFF;
+      --accent-color: #4A90E2;
+      --text-color: #333333;
+      --success-color: #A3E4D7;
+      --warning-color: #F7DC6F;
+      --error-color: #F5B7B1;
+      --border-color: #E0E6ED;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--primary-bg);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+      letter-spacing: 0.2px;
+    }
+
+    header {
+      background-color: var(--secondary-bg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    nav select {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      padding: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #6ba0e8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background-color: var(--border-color);
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: var(--primary-bg);
+    }
+
+    tbody tr:hover {
+      background-color: #E8F0FE;
+    }
+
+    .status-present {
+      background-color: var(--success-color);
+    }
+
+    .status-late {
+      background-color: var(--warning-color);
+    }
+
+    .status-absent {
+      background-color: var(--error-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      main {
+        padding: 0 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header role="banner">
+    <h1>ROTC System Admin Panel</h1>
+    <nav>
+      <label for="language-select" class="sr-only">Language</label>
+      <select id="language-select" aria-label="Language switcher">
+        <option value="en" selected>English</option>
+        <option value="fil">Filipino</option>
+      </select>
+    </nav>
+  </header>
+  <main role="main">
+    <section class="card" aria-labelledby="attendance-summary-title">
+      <h2 id="attendance-summary-title">Attendance Summary</h2>
+      <div id="attendance-summary">
+        <!-- Summary data will be loaded here -->
+        Loading...
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="attendance-logs-title">
+      <h2 id="attendance-logs-title">Attendance Logs</h2>
+      <table aria-describedby="attendance-logs-description">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Student Number</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Semester</th>
+            <th>Week</th>
+          </tr>
+        </thead>
+        <tbody id="attendance-logs-body">
+          <!-- Logs will be loaded here -->
+        </tbody>
+      </table>
+      <div id="pagination-controls">
+        <!-- Pagination controls will be here -->
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="scanner-control-title">
+      <h2 id="scanner-control-title">Scanner Control</h2>
+      <button id="toggle-scanner-btn" aria-pressed="false">Enable Scanner</button>
+      <button id="toggle-evening-btn" aria-pressed="false">Enable Evening Scanning</button>
+    </section>
+
+    <section class="card" aria-labelledby="event-scheduling-title">
+      <h2 id="event-scheduling-title">Schedule Event</h2>
+      <form id="event-schedule-form">
+        <label for="event-name">Event Name</label><br />
+        <input type="text" id="event-name" name="eventName" required /><br />
+        <label for="event-date">Event Date</label><br />
+        <input type="date" id="event-date" name="eventDate" required /><br />
+        <label>
+          <input type="checkbox" id="auto-enable-scanner" name="autoEnableScanner" />
+          Auto-enable scanner on event date
+        </label><br />
+        <button type="submit">Schedule Event</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
+    feather.replace();
+
+  // Global API base URL, to be set via Netlify environment variable
+  const API_BASE_URL = window.API_BASE_URL || '';
+
+  // Example: Fetch attendance summary and logs (to be replaced with real API calls)
+  async function fetchAttendanceSummary() {
+    const summaryDiv = document.getElementById('attendance-summary');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/attendance/attendance-summary`);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      summaryDiv.textContent = `Present: ${data.present}, Late: ${data.late}, Absent: ${data.absent}`;
+    } catch (error) {
+      summaryDiv.textContent = 'Failed to load attendance summary';
+      console.error('Error fetching attendance summary:', error);
+    }
+  }
+
+  async function fetchAttendanceLogs() {
+    const logsBody = document.getElementById('attendance-logs-body');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/attendance/attendance-logs`);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const logs = await response.json();
+      logsBody.innerHTML = logs.map(log => `
+        <tr>
+          <td>${log.name}</td>
+          <td>${log.studentNumber}</td>
+          <td>${log.date}</td>
+          <td class="status-${log.status.toLowerCase()}">${log.status.charAt(0)}</td>
+          <td>${log.semester}</td>
+          <td>${log.week}</td>
+        </tr>
+      `).join('');
+    } catch (error) {
+      logsBody.innerHTML = '<tr><td colspan="6">Failed to load attendance logs</td></tr>';
+      console.error('Error fetching attendance logs:', error);
+    }
+  }
+
+  document.getElementById('toggle-scanner-btn').addEventListener('click', async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/scanner/toggle`, { method: 'POST' });
+      if (!response.ok) throw new Error('Network response was not ok');
+      alert('Scanner toggled successfully');
+    } catch (error) {
+      alert('Failed to toggle scanner');
+      console.error('Error toggling scanner:', error);
+    }
+  });
+
+  document.getElementById('toggle-evening-btn').addEventListener('click', async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/scanner/toggle-evening`, { method: 'POST' });
+      if (!response.ok) throw new Error('Network response was not ok');
+      alert('Evening scanning toggled successfully');
+    } catch (error) {
+      alert('Failed to toggle evening scanning');
+      console.error('Error toggling evening scanning:', error);
+    }
+  });
+
+  document.getElementById('event-schedule-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const eventName = document.getElementById('event-name').value;
+    const eventDate = document.getElementById('event-date').value;
+    const autoEnableScanner = document.getElementById('auto-enable-scanner').checked;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/events/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName, eventDate, autoEnableScanner }),
+      });
+      if (!response.ok) throw new Error('Network response was not ok');
+      alert('Event scheduled successfully');
+    } catch (error) {
+      alert('Failed to schedule event');
+      console.error('Error scheduling event:', error);
+    }
+  });
+
+  // Initial load
+  fetchAttendanceSummary();
+  fetchAttendanceLogs();
+</script>
+</body>
+</html>

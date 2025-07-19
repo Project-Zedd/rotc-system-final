@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ROTC Admin Scanner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/feather-icons/dist/feather.css" />
+  <style>
+    :root {
+      --primary-bg: #F5F7FA;
+      --secondary-bg: #FFFFFF;
+      --accent-color: #4A90E2;
+      --text-color: #333333;
+      --success-color: #A3E4D7;
+      --warning-color: #F7DC6F;
+      --error-color: #F5B7B1;
+      --border-color: #E0E6ED;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--primary-bg);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+      letter-spacing: 0.2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: var(--secondary-bg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 10px 20px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      padding: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #6ba0e8;
+    }
+
+    #video {
+      width: 100%;
+      max-width: 600px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background-color: black;
+    }
+
+    #scan-result {
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    label {
+      cursor: pointer;
+    }
+
+    .status-present {
+      color: var(--success-color);
+    }
+
+    .status-late {
+      color: var(--warning-color);
+    }
+
+    .status-absent {
+      color: var(--error-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      main {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header role="banner">
+    <h1>ROTC Admin Scanner</h1>
+  </header>
+  <main role="main">
+    <section class="card" aria-labelledby="scanner-title">
+      <h2 id="scanner-title">QR Code Scanner</h2>
+      <video id="video" autoplay muted playsinline></video>
+      <div id="scan-result" aria-live="polite" aria-atomic="true">Waiting for scan...</div>
+      <div class="toggle-group">
+        <label>
+          <input type="checkbox" id="batch-scan-toggle" />
+          Batch Scan Mode
+        </label>
+        <label>
+          <input type="checkbox" id="voice-feedback-toggle" checked />
+          Voice Feedback
+        </label>
+        <label>
+          <input type="checkbox" id="geolocation-toggle" checked />
+          Geolocation Capture
+        </label>
+      </div>
+      <button id="confirm-scan-btn" disabled>Confirm Scan</button>
+      <div id="batch-summary" hidden>
+        <h3>Batch Scan Summary</h3>
+        <p id="batch-count">0 cadets scanned</p>
+        <p id="batch-present">Present: 0</p>
+        <p id="batch-late">Late: 0</p>
+        <p id="batch-absent">Absent: 0</p>
+        <button id="batch-confirm-btn">Confirm Batch</button>
+        <button id="batch-clear-btn">Clear Batch</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+  <script>
+    feather.replace();
+
+  // Global API base URL, to be set via Netlify environment variable
+  const API_BASE_URL = window.API_BASE_URL || '';
+
+  const video = document.getElementById('video');
+  const scanResult = document.getElementById('scan-result');
+  const confirmScanBtn = document.getElementById('confirm-scan-btn');
+  const batchScanToggle = document.getElementById('batch-scan-toggle');
+  const voiceFeedbackToggle = document.getElementById('voice-feedback-toggle');
+  const geolocationToggle = document.getElementById('geolocation-toggle');
+  const batchSummary = document.getElementById('batch-summary');
+  const batchCount = document.getElementById('batch-count');
+  const batchPresent = document.getElementById('batch-present');
+  const batchLate = document.getElementById('batch-late');
+  const batchAbsent = document.getElementById('batch-absent');
+  const batchConfirmBtn = document.getElementById('batch-confirm-btn');
+  const batchClearBtn = document.getElementById('batch-clear-btn');
+
+  let scanning = false;
+  let scanQueue = [];
+  let currentScan = null;
+
+  // Setup camera and scan loop
+  async function startScanner() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      video.srcObject = stream;
+      scanning = true;
+      scanLoop();
+    } catch (error) {
+      scanResult.textContent = 'Error accessing camera: ' + error.message;
+    }
+  }
+
+  function scanLoop() {
+    if (!scanning) return;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, canvas.width, canvas.height);
+    if (code) {
+      handleScan(code.data);
+    }
+    requestAnimationFrame(scanLoop);
+  }
+
+  function handleScan(data) {
+    if (batchScanToggle.checked) {
+      if (!scanQueue.includes(data)) {
+        scanQueue.push(data);
+        updateBatchSummary();
+        speak(`Scanned ${data}`);
+      }
+    } else {
+      currentScan = data;
+      scanResult.textContent = `Scanned: ${data}`;
+      confirmScanBtn.disabled = false;
+      if (voiceFeedbackToggle.checked) {
+        speak(`Scanned ${data}`);
+      }
+    }
+  }
+
+  function updateBatchSummary() {
+    batchCount.textContent = `${scanQueue.length} cadets scanned`;
+    // For demo, random counts
+    batchPresent.textContent = `Present: ${Math.floor(scanQueue.length * 0.6)}`;
+    batchLate.textContent = `Late: ${Math.floor(scanQueue.length * 0.3)}`;
+    batchAbsent.textContent = `Absent: ${Math.floor(scanQueue.length * 0.1)}`;
+    batchSummary.hidden = false;
+  }
+
+  confirmScanBtn.addEventListener('click', async () => {
+    if (!currentScan) return;
+    try {
+</body>
+</html>

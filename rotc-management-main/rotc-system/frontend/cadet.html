@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ROTC Cadet Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/feather-icons/dist/feather.css" />
+  <style>
+    :root {
+      --primary-bg: #F5F7FA;
+      --secondary-bg: #FFFFFF;
+      --accent-color: #4A90E2;
+      --text-color: #333333;
+      --success-color: #A3E4D7;
+      --warning-color: #F7DC6F;
+      --error-color: #F5B7B1;
+      --border-color: #E0E6ED;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--primary-bg);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+      letter-spacing: 0.2px;
+    }
+
+    header {
+      background-color: var(--secondary-bg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      padding: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #6ba0e8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background-color: var(--border-color);
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: var(--primary-bg);
+    }
+
+    tbody tr:hover {
+      background-color: #E8F0FE;
+    }
+
+    .status-present {
+      background-color: var(--success-color);
+    }
+
+    .status-late {
+      background-color: var(--warning-color);
+    }
+
+    .status-absent {
+      background-color: var(--error-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      main {
+        padding: 0 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header role="banner">
+    <h1>ROTC Cadet Portal</h1>
+  </header>
+  <main role="main">
+    <section class="card" aria-labelledby="profile-title">
+      <h2 id="profile-title">Profile</h2>
+      <img id="profile-photo" src="" alt="Cadet Photo" width="100" height="100" />
+      <p id="profile-name"></p>
+      <p id="profile-student-number"></p>
+      <p id="profile-course"></p>
+      <p id="profile-contact"></p>
+      <p id="profile-address"></p>
+      <button id="edit-profile-btn">Edit Profile</button>
+    </section>
+
+    <section class="card" aria-labelledby="attendance-history-title">
+      <h2 id="attendance-history-title">Attendance History</h2>
+      <input type="text" id="search-records" placeholder="Search by student number" aria-label="Search attendance records" />
+      <table aria-describedby="attendance-history-title">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time In</th>
+            <th>Time Out</th>
+            <th>Status</th>
+            <th>Event</th>
+            <th>Semester</th>
+            <th>Week</th>
+          </tr>
+        </thead>
+        <tbody id="attendance-history-body">
+          <!-- Attendance records will be loaded here -->
+        </tbody>
+      </table>
+      <div id="pagination-controls">
+        <!-- Pagination controls will be here -->
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="attendance-analytics-title">
+      <h2 id="attendance-analytics-title">Attendance Analytics</h2>
+      <canvas id="attendance-chart" width="800" height="400" aria-label="Attendance analytics chart"></canvas>
+    </section>
+
+    <section class="card" aria-labelledby="data-request-title">
+      <h2 id="data-request-title">Data Request</h2>
+      <form id="data-request-form">
+        <label for="request-type">Request Type</label><br />
+        <select id="request-type" name="requestType" required>
+          <option value="view">View Data</option>
+          <option value="delete">Delete Data</option>
+        </select><br />
+        <button type="submit">Submit Request</button>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="id-card-download-title">
+      <h2 id="id-card-download-title">Download ID Card</h2>
+      <button id="download-id-card-btn">Download ID Card</button>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    feather.replace();
+
+  // Global API base URL, to be set via Netlify environment variable
+  const API_BASE_URL = window.API_BASE_URL || '';
+
+  // TODO: Implement API calls to load profile, attendance history, analytics, and handle data requests and ID card download
+
+  document.getElementById('edit-profile-btn').addEventListener('click', () => {
+    alert('Edit profile feature coming soon.');
+  });
+
+  document.getElementById('download-id-card-btn').addEventListener('click', () => {
+    alert('Download ID card feature coming soon.');
+  });
+
+  document.getElementById('data-request-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Data request submitted.');
+  });
+</script>
+</body>
+</html>
